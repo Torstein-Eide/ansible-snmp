@@ -12,6 +12,12 @@ agentAddress  {{ snmp_agentadress_protocol.ipv4 }}:{{ snmp_agentadress_adress.ip
 {% if ansible_default_ipv6.address is defined %}
 agentAddress {{ snmp_agentadress_protocol.ipv6 }}:{{ snmp_agentadress_adress.ipv6 }}:{{ snmp_agentadress_port.ipv6 }}
 {% endif %}
+{% if snmp_agentadress_port.ipv4 is defined %}
+agentAddress {{ snmp_agentadress_protocol.ipv4 }}:127.0.0.1:{{ snmp_agentadress_port.ipv4 }}
+{% endif %}
+{% if snmp_agentadress_port.ipv6 is defined %}
+agentAddress {{ snmp_agentadress_protocol.ipv6 }}:::1:{{ snmp_agentadress_port.ipv6 }}
+{% endif %}
 
 {% if snmp_location is defined %}
 sysLocation {{ snmp_location }}
@@ -21,9 +27,18 @@ sysName {{ ansible_fqdn }}
 sysContact {{ snmp_contact }}
 {% endif %}
 
+storageUseNFS 1
+
+{% if snmp_custom_line is defined %}
+{% for line in snmp_custom_line %}
+{{ line }}
+{% endfor %}
+{% endif %}
+
 {% for item in snmp_extension_list %}
 extend {{ item.extend }}
 {% endfor %}
+
 {% if "pve" in ansible_kernel %}
 extend proxmox {{ snmp_extension_scripts }}/proxmox
 {% endif %}
