@@ -1,10 +1,14 @@
 ---
 # tasks file for sbaerlocher.snmp
+- name: test
+  setup:
 
 - name: add OS specific variables
   include_vars: "{{ loop_vars }}"
   with_first_found:
     - files:
+        - "{{ ansible_lsb['id'] }}-{{ ansible_facts ['distribution_release'] }}.yml"
+        - "{{ ansible_lsb['id'] }}.yml"
         - "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
         - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
         - "{{ ansible_distribution }}.yml"
@@ -19,10 +23,15 @@
     - configuration
     - packages
 
+
+
+
 - name: include distribution tasks
   include_tasks: "{{ loop_distribution }}"
   with_first_found:
     - files:
+        - "{{ ansible_lsb['id'] }}-{{ ansible_facts ['distribution_release'] }}.yml"
+        - "{{ ansible_lsb['id'] }}.yml"
         - "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
         - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
         - "{{ ansible_distribution }}.yml"

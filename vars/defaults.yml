@@ -1,2 +1,5 @@
 ---
 # vars file for sbaerlocher.snmp
+snmp_packages:
+  - snmp
+  - snmpd

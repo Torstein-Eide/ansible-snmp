@@ -8,6 +8,12 @@ snmp_logging_options: ''
 snmp_password: snmp_password
 snmp_user: snmp
 
+##map an SNMPv1 or SNMPv2c community string to a security name - either from a particular range of source addresses, or globally ("default"). A restricted source can either be a specific hostname (or address), or a subnet - represented as IP/MASK (e.g. 10.10.10.0/255.255.255.0), or IP/BITS (e.g. 10.10.10.0/24), or the IPv6 equivalents.
+#The same community string can be specified in several separate directives (presumably with different source tokens), and the first source/community combination that matches the incoming request will be selected. Various source/community combinations can also map to the same security name.
+snmp_source:
+  - 10.0.0.0/8
+  - 192.168.0.0/16
+
 snmp_agentadress_protocol:
   ipv4: udp
   ipv6: udp6
@@ -22,7 +28,7 @@ snmp_extension_list:
   - url: 'https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/distro'
     extend: '.1.3.6.1.4.1.2021.7890.1 distro {{ snmp_extension_scripts }}/distro'
 
-snmp_extension_os-hw-serie:
-    - .1.3.6.1.4.1.2021.7890.2 hardware '/bin/cat /sys/devices/virtual/dmi/id/product_name'
-    - .1.3.6.1.4.1.2021.7890.3 vendor   '/bin/cat /sys/devices/virtual/dmi/id/sys_vendor'
-    - .1.3.6.1.4.1.2021.7890.4 serial   '/bin/cat /sys/devices/virtual/dmi/id/product_serial'
+snmp_extension_os_hw_serie:
+    - .1.3.6.1.4.1.2021.7890.2 hardware /bin/cat /sys/devices/virtual/dmi/id/product_name
+    - .1.3.6.1.4.1.2021.7890.3 vendor   /bin/cat /sys/devices/virtual/dmi/id/sys_vendor
+    - .1.3.6.1.4.1.2021.7890.4 serial   /bin/cat /sys/devices/virtual/dmi/id/product_serial

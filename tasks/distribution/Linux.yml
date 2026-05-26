@@ -1,6 +1,9 @@
 ---
 # tasks file for sbaerlocher.snmp
 
+
+
+
 - name: 'linux : install snmp'
   become: true
   package:
@@ -59,7 +62,7 @@
   tags:
     - configuration
 
-- name: 'linux : configure snmpd daemon'
+- name: linux configure snmpd daemon
   become: true
   template:
     src: 'default/snmpd.{{ ansible_os_family }}.j2'
