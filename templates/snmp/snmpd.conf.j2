@@ -2,14 +2,20 @@
 
 {% if snmp_rocommunity is defined and snmp_source is defined %}
 {% for line in snmp_source %}
-rocommunity {{ snmp_rocommunity }}  {{ line }}
+rocommunity {{ snmp_rocommunity }} {{ line }}
 {% endfor %}
 {% elif snmp_rocommunity is defined %}
 rocommunity {{ snmp_rocommunity }}
 {% endif %}
+{% if snmp_rocommunity is defined and snmp_source6 is defined %}
+{% for line in snmp_source6 %}
+rocommunity6 {{ snmp_rocommunity }} {{ line }}
+{% endfor %}
+{% endif %}
 
 
 
+maxGetbulkResponses {{ snmp_max_getbulk_responses }}
 createUser {{ snmp_user }} SHA {{ snmp_password }} AES {{ snmp_encryption }}
 
 rouser {{ snmp_user }} priv
@@ -29,8 +35,17 @@ sysName {{ ansible_fqdn }}
 {% if snmp_contact is defined %}
 sysContact {{ snmp_contact }}
 {% endif %}
+sysServices {{ snmp_sys_services }}
 
-storageUseNFS 1
+storageUseNFS {{ snmp_storage_use_nfs }}
+skipNFSInHostResources {{ snmp_skip_nfs_in_host_resources | ternary('true', 'false') }}
+includeAllDisks {{ snmp_include_all_disks }}
+diskio_exclude_fd {{ snmp_diskio_exclude_fd | ternary('yes', 'no') }}
+diskio_exclude_loop {{ snmp_diskio_exclude_loop | ternary('yes', 'no') }}
+diskio_exclude_ram {{ snmp_diskio_exclude_ram | ternary('yes', 'no') }}
+{% if snmp_include_ifmib_iface_prefix | length > 0 %}
+include_ifmib_iface_prefix {{ snmp_include_ifmib_iface_prefix | join(' ') }}
+{% endif %}
 
 {% if snmp_custom_line is defined %}
 {% for line in snmp_custom_line %}
@@ -50,4 +65,9 @@ extend {{ item }}
 extend proxmox {{ snmp_extension_scripts }}/proxmox
 {% endif %}
 
+{% if snmp_agentx_enabled %}
 master agentx
+{% if snmp_deamon_group is defined %}
+agentXPerms {{ snmp_agentx_socket_perms }} {{ snmp_agentx_dir_perms }} {{ snmp_agentx_user }} {{ snmp_deamon_group }}
+{% endif %}
+{% endif %}

@@ -1,9 +1,6 @@
 ---
 # tasks file for sbaerlocher.snmp
 
-
-
-
 - name: 'linux : install snmp'
   become: true
   package:
@@ -20,7 +17,7 @@
     path: '{{ snmp_extension_scripts }}'
     state: directory
     owner: root
-    group: root
+    group: "{{ snmp_deamon_group | default('root') }}"
     mode: 0755
     seuser: system_u
     serole: object_r
@@ -35,7 +32,7 @@
     url: '{{ item.url }}'
     dest: '{{ snmp_extension_scripts + "/" }}'
     owner: root
-    group: root
+    group: "{{ snmp_deamon_group | default('root') }}"
     mode: 0755
     seuser: system_u
     serole: object_r
@@ -49,10 +46,11 @@
 - name: 'linux : install snmp extension proxmox'
   become: true
   get_url:
-    url: 'https://raw.githubusercontent.com/librenms/librenms-agent/master/agent-local/proxmox'
+    url: >-
+      https://raw.githubusercontent.com/librenms/librenms-agent/master/agent-local/proxmox
     dest: '{{ snmp_extension_scripts + "/" }}'
     owner: root
-    group: root
+    group: "{{ snmp_deamon_group | default('root') }}"
     mode: 0755
     seuser: system_u
     serole: object_r
