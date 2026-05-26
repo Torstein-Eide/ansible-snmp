@@ -19,10 +19,10 @@ maxGetbulkResponses {{ snmp_max_getbulk_responses }}
 createUser {{ snmp_user }} SHA {{ snmp_password }} AES {{ snmp_encryption }}
 
 rouser {{ snmp_user }} priv
-{% if ansible_default_ipv4.address is defined %}
+{% if ansible_facts['default_ipv4']['address'] is defined %}
 agentAddress  {{ snmp_agentadress_protocol.ipv4 }}:{{ snmp_agentadress_port.ipv4 }}
 {% endif %}
-{% if ansible_default_ipv6.address is defined %}
+{% if ansible_facts['default_ipv6']['address'] is defined %}
 agentAddress {{ snmp_agentadress_protocol.ipv6 }}:{{ snmp_agentadress_port.ipv6 }}
 {% endif %}
 # Loopback
@@ -31,7 +31,7 @@ agentAddress {{ snmp_agentadress_protocol.ipv6 }}:{{ snmp_agentadress_port.ipv6 
 {% if snmp_location is defined %}
 sysLocation {{ snmp_location }}
 {% endif %}
-sysName {{ ansible_fqdn }}
+sysName {{ ansible_facts['fqdn'] }}
 {% if snmp_contact is defined %}
 sysContact {{ snmp_contact }}
 {% endif %}
@@ -61,7 +61,7 @@ extend {{ item.extend }}
 extend {{ item }}
 {% endfor %}
 
-{% if "pve" in ansible_kernel %}
+{% if "pve" in ansible_facts['kernel'] %}
 extend proxmox {{ snmp_extension_scripts }}/proxmox
 {% endif %}
 

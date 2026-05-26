@@ -26,6 +26,24 @@
   tags:
     - configuration
 
+- name: 'linux : allow snmp daemon hardware reads'
+  become: true
+  copy:
+    content: >
+      {{ snmp_deamon_user }} ALL=(root) NOPASSWD:
+      {{ snmp_extension_hw_sudo_commands | join(', ') }}
+    dest: /etc/sudoers.d/snmp-hardware
+    owner: root
+    group: root
+    mode: '0440'
+    validate: /usr/sbin/visudo -cf %s
+  when:
+    - snmp_deamon_user is defined
+    - snmp_extension_hw_sudo_commands is defined
+    - snmp_extension_hw_sudo_commands | length > 0
+  tags:
+    - configuration
+
 - name: 'linux : install snmp extension'
   become: true
   get_url:
@@ -56,14 +74,14 @@
     serole: object_r
     setype: lib_t
     selevel: s0
-  when: '"pve" in ansible_kernel'
+  when: '"pve" in ansible_facts["kernel"]'
   tags:
     - configuration
 
 - name: linux configure snmpd daemon
   become: true
   template:
-    src: 'default/snmpd.{{ ansible_os_family }}.j2'
+    src: 'default/snmpd.{{ ansible_facts["os_family"] }}.j2'
     dest: '{{ snmp_daemon_config }}'
     owner: root
     group: root
