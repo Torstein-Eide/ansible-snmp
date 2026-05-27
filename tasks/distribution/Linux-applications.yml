@@ -1,0 +1,86 @@
+---
+# Dispatch LibreNMS SNMP application extends individually.
+
+- name: 'linux apps : discover installed applications'
+  include_tasks: applications-discovery.yml
+
+- name: 'linux apps : create application extension directory'
+  become: true
+  file:
+    path: '{{ snmp_application_extension_scripts }}'
+    state: directory
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+
+- name: 'linux apps : configure apache extension'
+  include_tasks: applications/apache.yml
+  when: snmp_application_apache_enabled
+
+- name: 'linux apps : configure nginx extension'
+  include_tasks: applications/nginx.yml
+  when: snmp_application_nginx_enabled
+
+- name: 'linux apps : configure mysql extension'
+  include_tasks: applications/mysql.yml
+  when: snmp_application_mysql_enabled
+
+- name: 'linux apps : configure redis extension'
+  include_tasks: applications/redis.yml
+  when: snmp_application_redis_enabled
+
+- name: 'linux apps : configure memcached extension'
+  include_tasks: applications/memcached.yml
+  when: snmp_application_memcached_enabled
+
+- name: 'linux apps : configure fail2ban extension'
+  include_tasks: applications/fail2ban.yml
+  when: snmp_application_fail2ban_enabled
+
+- name: 'linux apps : configure chronyd extension'
+  include_tasks: applications/chronyd.yml
+  when: snmp_application_chronyd_enabled
+
+- name: 'linux apps : configure docker extension'
+  include_tasks: applications/docker.yml
+  when: snmp_application_docker_enabled
+
+- name: 'linux apps : configure systemd extension'
+  include_tasks: applications/systemd.yml
+  when: snmp_application_systemd_enabled
+
+- name: 'linux apps : configure borgbackup extension'
+  include_tasks: applications/borgbackup.yml
+  when: snmp_application_borgbackup_enabled
+
+- name: 'linux apps : configure mdadm extension'
+  include_tasks: applications/mdadm.yml
+  when: snmp_application_mdadm_enabled
+
+- name: 'linux apps : configure nfs extension'
+  include_tasks: applications/nfs.yml
+  when: snmp_application_nfs_enabled
+
+- name: 'linux apps : configure osupdate extension'
+  include_tasks: applications/osupdate.yml
+  when: snmp_application_osupdate_enabled
+
+- name: 'linux apps : configure pihole extension'
+  include_tasks: applications/pihole.yml
+  when: snmp_application_pihole_enabled
+
+- name: 'linux apps : configure proxmox extension'
+  include_tasks: applications/proxmox.yml
+  when: snmp_application_proxmox_enabled
+
+- name: 'linux apps : configure smart extension'
+  include_tasks: applications/smart.yml
+  when: snmp_application_smart_enabled
+
+- name: 'linux apps : configure ups-nut extension'
+  include_tasks: applications/ups-nut.yml
+  when: snmp_application_ups_nut_enabled

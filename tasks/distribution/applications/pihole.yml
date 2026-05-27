@@ -1,0 +1,42 @@
+---
+
+- name: 'linux apps pihole : install extension script'
+  become: true
+  get_url:
+    url: >-
+      https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/pi-hole
+    dest: '{{ snmp_application_extension_scripts }}/pi-hole'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  when: snmp_application_discovery.pihole
+
+- name: 'linux apps pihole : install snmpd include snippet'
+  become: true
+  copy:
+    content: |
+      extend pi-hole {{ snmp_application_extension_scripts }}/pi-hole
+    dest: '{{ snmp_config_include_dir }}/pi-hole.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: snmp_application_discovery.pihole
+  notify:
+    - restart snmp
+
+- name: 'linux apps pihole : remove stale snmpd include snippet'
+  become: true
+  file:
+    path: '{{ snmp_config_include_dir }}/pi-hole.conf'
+    state: absent
+  when: not snmp_application_discovery.pihole
+  notify:
+    - restart snmp

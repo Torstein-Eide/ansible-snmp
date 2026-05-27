@@ -26,6 +26,22 @@
   tags:
     - configuration
 
+- name: 'linux : create snmp config include directory'
+  become: true
+  file:
+    path: '{{ snmp_config_include_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: snmp_config_include_dir_enabled
+  tags:
+    - configuration
+
 - name: 'linux : allow snmp daemon hardware reads'
   become: true
   copy:
@@ -58,23 +74,6 @@
     selevel: s0
   with_items:
     - "{{ snmp_extension_list }}"
-  tags:
-    - configuration
-
-- name: 'linux : install snmp extension proxmox'
-  become: true
-  get_url:
-    url: >-
-      https://raw.githubusercontent.com/librenms/librenms-agent/master/agent-local/proxmox
-    dest: '{{ snmp_extension_scripts + "/" }}'
-    owner: root
-    group: "{{ snmp_deamon_group | default('root') }}"
-    mode: 0755
-    seuser: system_u
-    serole: object_r
-    setype: lib_t
-    selevel: s0
-  when: '"pve" in ansible_facts["kernel"]'
   tags:
     - configuration
 
@@ -141,5 +140,31 @@
         state: started
 
   when: check_snmp.changed
+  tags:
+    - configuration
+
+- name: 'linux : configure detected application extensions'
+  include_tasks: Linux-applications.yml
+  when:
+    - snmp_application_extensions_enabled
+    - snmp_config_include_dir_enabled
+  tags:
+    - configuration
+
+- name: 'linux : apply snmp changes before application validation'
+  meta: flush_handlers
+  when:
+    - snmp_application_extensions_enabled
+    - snmp_config_include_dir_enabled
+    - snmp_application_validate_snmp_output
+  tags:
+    - configuration
+
+- name: 'linux : validate application extension snmp output'
+  include_tasks: applications-validate.yml
+  when:
+    - snmp_application_extensions_enabled
+    - snmp_config_include_dir_enabled
+    - snmp_application_validate_snmp_output
   tags:
     - configuration

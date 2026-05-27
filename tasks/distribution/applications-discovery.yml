@@ -1,0 +1,169 @@
+---
+
+- name: 'linux apps discovery : detect apache'
+  shell: command -v apache2 >/dev/null 2>&1 || command -v httpd >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_apache_detect
+
+- name: 'linux apps discovery : detect nginx'
+  shell: command -v nginx >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_nginx_detect
+
+- name: 'linux apps discovery : detect mysql'
+  shell: >-
+    command -v mysqld >/dev/null 2>&1 ||
+    command -v mariadbd >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_mysql_detect
+
+- name: 'linux apps discovery : detect redis'
+  shell: command -v redis-server >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_redis_detect
+
+- name: 'linux apps discovery : detect memcached'
+  shell: command -v memcached >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_memcached_detect
+
+- name: 'linux apps discovery : detect fail2ban'
+  shell: command -v fail2ban-client >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_fail2ban_detect
+
+- name: 'linux apps discovery : detect chronyd'
+  shell: command -v chronyc >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_chronyd_detect
+
+- name: 'linux apps discovery : detect docker'
+  shell: command -v docker >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_docker_detect
+
+- name: 'linux apps discovery : detect systemd'
+  shell: command -v systemctl >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_systemd_detect
+
+- name: 'linux apps discovery : detect borgbackup'
+  shell: command -v borg >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_borgbackup_detect
+
+- name: 'linux apps discovery : detect mdadm'
+  shell: >-
+    command -v mdadm >/dev/null 2>&1 &&
+    mdadm --detail --scan 2>/dev/null | grep -q '^ARRAY '
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_mdadm_detect
+
+- name: 'linux apps discovery : detect nfs'
+  shell: >-
+    command -v nfsstat >/dev/null 2>&1 ||
+    command -v exportfs >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_nfs_detect
+
+- name: 'linux apps discovery : detect osupdate'
+  shell: >-
+    command -v apt-get >/dev/null 2>&1 ||
+    command -v yum >/dev/null 2>&1 ||
+    command -v dnf >/dev/null 2>&1 ||
+    command -v zypper >/dev/null 2>&1 ||
+    command -v pacman >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_osupdate_detect
+
+- name: 'linux apps discovery : detect pihole'
+  shell: command -v pihole >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_pihole_detect
+
+- name: 'linux apps discovery : detect proxmox'
+  shell: test -d /etc/pve || command -v pvesh >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_proxmox_detect
+
+- name: 'linux apps discovery : detect smart'
+  shell: command -v smartctl >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_smart_detect
+
+- name: 'linux apps discovery : detect ups-nut'
+  shell: command -v upsc >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_ups_nut_detect
+
+- name: 'linux apps discovery : record discovered applications'
+  set_fact:
+    snmp_application_discovery:
+      apache: '{{ snmp_application_apache_detect.rc == 0 }}'
+      nginx: '{{ snmp_application_nginx_detect.rc == 0 }}'
+      mysql: '{{ snmp_application_mysql_detect.rc == 0 }}'
+      redis: '{{ snmp_application_redis_detect.rc == 0 }}'
+      memcached: '{{ snmp_application_memcached_detect.rc == 0 }}'
+      fail2ban: '{{ snmp_application_fail2ban_detect.rc == 0 }}'
+      chronyd: '{{ snmp_application_chronyd_detect.rc == 0 }}'
+      docker: '{{ snmp_application_docker_detect.rc == 0 }}'
+      systemd: '{{ snmp_application_systemd_detect.rc == 0 }}'
+      borgbackup: '{{ snmp_application_borgbackup_detect.rc == 0 }}'
+      mdadm: '{{ snmp_application_mdadm_detect.rc == 0 }}'
+      nfs: '{{ snmp_application_nfs_detect.rc == 0 }}'
+      osupdate: '{{ snmp_application_osupdate_detect.rc == 0 }}'
+      pihole: '{{ snmp_application_pihole_detect.rc == 0 }}'
+      proxmox: '{{ snmp_application_proxmox_detect.rc == 0 }}'
+      smart: '{{ snmp_application_smart_detect.rc == 0 }}'
+      ups_nut: '{{ snmp_application_ups_nut_detect.rc == 0 }}'

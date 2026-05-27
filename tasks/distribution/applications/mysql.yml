@@ -1,0 +1,52 @@
+---
+
+- name: 'linux apps mysql : create cache directory'
+  become: true
+  file:
+    path: /var/cache/librenms
+    state: directory
+    owner: "{{ snmp_deamon_user | default('root') }}"
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+  when: snmp_application_discovery.mysql
+
+- name: 'linux apps mysql : install extension script'
+  become: true
+  get_url:
+    url: >-
+      https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/mysql
+    dest: '{{ snmp_application_extension_scripts }}/mysql'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  when: snmp_application_discovery.mysql
+
+- name: 'linux apps mysql : install snmpd include snippet'
+  become: true
+  copy:
+    content: |
+      extend mysql {{ snmp_application_extension_scripts }}/mysql
+    dest: '{{ snmp_config_include_dir }}/mysql.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: snmp_application_discovery.mysql
+  notify:
+    - restart snmp
+
+- name: 'linux apps mysql : remove stale snmpd include snippet'
+  become: true
+  file:
+    path: '{{ snmp_config_include_dir }}/mysql.conf'
+    state: absent
+  when: not snmp_application_discovery.mysql
+  notify:
+    - restart snmp

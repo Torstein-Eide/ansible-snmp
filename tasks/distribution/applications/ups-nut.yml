@@ -1,0 +1,42 @@
+---
+
+- name: 'linux apps ups-nut : install extension script'
+  become: true
+  get_url:
+    url: >-
+      https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/ups-nut.sh
+    dest: '{{ snmp_application_extension_scripts }}/ups-nut.sh'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  when: snmp_application_discovery.ups_nut
+
+- name: 'linux apps ups-nut : install snmpd include snippet'
+  become: true
+  copy:
+    content: |
+      extend ups-nut {{ snmp_application_extension_scripts }}/ups-nut.sh
+    dest: '{{ snmp_config_include_dir }}/ups-nut.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: snmp_application_discovery.ups_nut
+  notify:
+    - restart snmp
+
+- name: 'linux apps ups-nut : remove stale snmpd include snippet'
+  become: true
+  file:
+    path: '{{ snmp_config_include_dir }}/ups-nut.conf'
+    state: absent
+  when: not snmp_application_discovery.ups_nut
+  notify:
+    - restart snmp

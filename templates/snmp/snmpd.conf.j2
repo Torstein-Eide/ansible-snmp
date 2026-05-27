@@ -61,13 +61,13 @@ extend {{ item.extend }}
 extend {{ item }}
 {% endfor %}
 
-{% if "pve" in ansible_facts['kernel'] %}
-extend proxmox {{ snmp_extension_scripts }}/proxmox
-{% endif %}
-
 {% if snmp_agentx_enabled %}
 master agentx
 {% if snmp_deamon_group is defined %}
 agentXPerms {{ snmp_agentx_socket_perms }} {{ snmp_agentx_dir_perms }} {{ snmp_agentx_user }} {{ snmp_deamon_group }}
 {% endif %}
+{% endif %}
+
+{% if snmp_config_include_dir_enabled %}
+includeDir {{ snmp_config_include_dir }}
 {% endif %}

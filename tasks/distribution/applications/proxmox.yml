@@ -1,0 +1,42 @@
+---
+
+- name: 'linux apps proxmox : install extension script'
+  become: true
+  get_url:
+    url: >-
+      https://raw.githubusercontent.com/librenms/librenms-agent/master/agent-local/proxmox
+    dest: '{{ snmp_application_extension_scripts }}/proxmox'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  when: snmp_application_discovery.proxmox
+
+- name: 'linux apps proxmox : install snmpd include snippet'
+  become: true
+  copy:
+    content: |
+      extend proxmox {{ snmp_application_extension_scripts }}/proxmox
+    dest: '{{ snmp_config_include_dir }}/proxmox.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: snmp_application_discovery.proxmox
+  notify:
+    - restart snmp
+
+- name: 'linux apps proxmox : remove stale snmpd include snippet'
+  become: true
+  file:
+    path: '{{ snmp_config_include_dir }}/proxmox.conf'
+    state: absent
+  when: not snmp_application_discovery.proxmox
+  notify:
+    - restart snmp

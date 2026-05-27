@@ -1,0 +1,42 @@
+---
+
+- name: 'linux apps nginx : install extension script'
+  become: true
+  get_url:
+    url: >-
+      https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/nginx
+    dest: '{{ snmp_application_extension_scripts }}/nginx'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  when: snmp_application_discovery.nginx
+
+- name: 'linux apps nginx : install snmpd include snippet'
+  become: true
+  copy:
+    content: |
+      extend nginx {{ snmp_application_extension_scripts }}/nginx
+    dest: '{{ snmp_config_include_dir }}/nginx.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: snmp_application_discovery.nginx
+  notify:
+    - restart snmp
+
+- name: 'linux apps nginx : remove stale snmpd include snippet'
+  become: true
+  file:
+    path: '{{ snmp_config_include_dir }}/nginx.conf'
+    state: absent
+  when: not snmp_application_discovery.nginx
+  notify:
+    - restart snmp

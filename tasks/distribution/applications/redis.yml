@@ -1,0 +1,43 @@
+---
+
+- name: 'linux apps redis : install extension script'
+  become: true
+  get_url:
+    url: >-
+      https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/redis.py
+    dest: '{{ snmp_application_extension_scripts }}/redis.py'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  when: snmp_application_discovery.redis
+
+- name: 'linux apps redis : install snmpd include snippet'
+  become: true
+  copy:
+    content: >
+      {{ 'extend redis /bin/python3 '
+         ~ snmp_application_extension_scripts ~ '/redis.py' }}
+    dest: '{{ snmp_config_include_dir }}/redis.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: snmp_application_discovery.redis
+  notify:
+    - restart snmp
+
+- name: 'linux apps redis : remove stale snmpd include snippet'
+  become: true
+  file:
+    path: '{{ snmp_config_include_dir }}/redis.conf'
+    state: absent
+  when: not snmp_application_discovery.redis
+  notify:
+    - restart snmp
