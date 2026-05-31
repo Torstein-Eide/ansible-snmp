@@ -17,6 +17,27 @@
     setype: lib_t
     selevel: s0
 
+- name: 'linux apps : install tmpfiles.d entry for extension cache directory'
+  become: true
+  copy:
+    content: |
+      d {{ snmp_application_cache_dir }} 0755 root root -
+    dest: /etc/tmpfiles.d/librenms-snmp-extension.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - apply tmpfiles
+
+- name: 'linux apps : create extension cache directory'
+  become: true
+  file:
+    path: '{{ snmp_application_cache_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: 'linux apps : configure apache extension'
   include_tasks: applications/apache.yml
   when: snmp_application_apache_enabled
@@ -76,6 +97,10 @@
 - name: 'linux apps : configure proxmox extension'
   include_tasks: applications/proxmox.yml
   when: snmp_application_proxmox_enabled
+
+- name: 'linux apps : configure nvidia_gpu extension'
+  include_tasks: applications/nvidia_gpu.yml
+  when: snmp_application_nvidia_gpu_enabled
 
 - name: 'linux apps : configure smart extension'
   include_tasks: applications/smart.yml

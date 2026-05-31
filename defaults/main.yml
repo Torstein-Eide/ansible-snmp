@@ -62,6 +62,7 @@ snmp_extension_list:
 
 snmp_application_extensions_enabled: true
 snmp_application_extension_scripts: '{{ snmp_extension_scripts }}/applications'
+snmp_application_cache_dir: /run/snmp/extension
 snmp_application_validate_snmp_output: true
 snmp_application_validate_snmp_host: '{{ snmp_agentadress_adress.ipv4 }}'
 snmp_application_apache_enabled: true
@@ -70,6 +71,12 @@ snmp_application_mysql_enabled: true
 snmp_application_redis_enabled: true
 snmp_application_memcached_enabled: true
 snmp_application_fail2ban_enabled: true
+snmp_application_fail2ban_cache_file: '{{ snmp_application_cache_dir }}/fail2ban'
+snmp_application_smart_cache_file: '{{ snmp_application_cache_dir }}/smart'
+snmp_application_smart_config_file: /etc/snmp/extension/smart.config
+snmp_application_smart_smartctl: /usr/bin/env smartctl
+snmp_application_smart_use_sn: 1
+snmp_application_smart_devices: []
 snmp_application_chronyd_enabled: true
 snmp_application_docker_enabled: true
 snmp_application_systemd_enabled: true
@@ -80,6 +87,7 @@ snmp_application_osupdate_enabled: true
 snmp_application_pihole_enabled: true
 snmp_application_proxmox_enabled: true
 snmp_application_smart_enabled: true
+snmp_application_nvidia_gpu_enabled: true
 snmp_application_ups_nut_enabled: true
 
 snmp_extension_os_hw_serie:

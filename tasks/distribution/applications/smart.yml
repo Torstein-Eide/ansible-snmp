@@ -1,5 +1,15 @@
 ---
 
+- name: 'linux apps smart : install prerequisites'
+  become: true
+  package:
+    name:
+      - smartmontools
+      - libjson-perl
+      - libmime-base64-perl
+    state: present
+  when: snmp_application_discovery.smart
+
 - name: 'linux apps smart : install extension script'
   become: true
   get_url:
@@ -14,12 +24,171 @@
     setype: lib_t
     selevel: s0
   when: snmp_application_discovery.smart
+  notify:
+    - refresh smart cache
 
-- name: 'linux apps smart : install snmpd include snippet'
+- name: 'linux apps smart : create cache directory'
+  become: true
+  file:
+    path: '{{ snmp_application_cache_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+  notify:
+    - refresh smart cache
+
+- name: 'linux apps smart : create config directory'
+  become: true
+  file:
+    path: '{{ snmp_application_smart_config_file | dirname }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: snmp_application_discovery.smart
+
+- name: 'linux apps smart : scan for devices'
+  become: true
+  command: smartctl --scan-open
+  register: snmp_application_smart_scan
+  changed_when: false
+  failed_when: false
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_smart_devices | length == 0
+
+- name: 'linux apps smart : deploy config'
+  become: true
+  template:
+    src: snmp/smart.config.j2
+    dest: '{{ snmp_application_smart_config_file }}'
+    owner: root
+    group: root
+    mode: '0640'
+  when: snmp_application_discovery.smart
+  notify:
+    - refresh smart cache
+
+- name: 'linux apps smart : install sudoers file'
   become: true
   copy:
     content: |
-      extend smart /bin/cat /var/cache/smart
+      {{ snmp_deamon_user }} ALL=(root) NOPASSWD: {{ snmp_application_extension_scripts }}/smart
+    dest: /etc/sudoers.d/snmp-smart
+    owner: root
+    group: root
+    mode: '0440'
+    validate: /usr/sbin/visudo -cf %s
+  when:
+    - snmp_application_discovery.smart
+    - snmp_deamon_user is defined
+
+- name: 'linux apps smart : remove stale sudoers file'
+  become: true
+  file:
+    path: /etc/sudoers.d/snmp-smart
+    state: absent
+  when: not snmp_application_discovery.smart
+
+- name: 'linux apps smart : install common systemd service'
+  become: true
+  template:
+    src: systemd/librenms-snmp-extension@.service.j2
+    dest: /etc/systemd/system/librenms-snmp-extension@.service
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+
+- name: 'linux apps smart : install common systemd timer'
+  become: true
+  template:
+    src: systemd/librenms-snmp-extension@.timer.j2
+    dest: /etc/systemd/system/librenms-snmp-extension@.timer
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+
+- name: 'linux apps smart : create systemd override directory'
+  become: true
+  file:
+    path: /etc/systemd/system/librenms-snmp-extension@smart.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+    - refresh smart cache
+
+- name: 'linux apps smart : install systemd override'
+  become: true
+  template:
+    src: systemd/librenms-snmp-extension-smart-override.conf.j2
+    dest: /etc/systemd/system/librenms-snmp-extension@smart.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+    - refresh smart cache
+
+- name: 'linux apps smart : enable cache refresh timer'
+  become: true
+  systemd:
+    name: librenms-snmp-extension@smart.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+
+- name: 'linux apps smart : check cache file'
+  become: true
+  stat:
+    path: '{{ snmp_application_smart_cache_file }}'
+  register: snmp_application_smart_cache_stat
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+
+- name: 'linux apps smart : queue cache refresh'
+  become: true
+  command:
+    argv:
+      - /bin/true
+  changed_when: true
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+    - not snmp_application_smart_cache_stat.stat.exists
+  notify:
+    - refresh smart cache
+
+- name: 'linux apps smart : install cached snmpd include snippet'
+  become: true
+  template:
+    src: snmp/smart-cached.conf.j2
     dest: '{{ snmp_config_include_dir }}/smart.conf'
     owner: root
     group: root
@@ -28,9 +197,59 @@
     serole: object_r
     setype: etc_t
     selevel: s0
-  when: snmp_application_discovery.smart
+  when:
+    - snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
   notify:
     - restart snmp
+
+- name: 'linux apps smart : install direct snmpd include snippet'
+  become: true
+  template:
+    src: snmp/smart-direct.conf.j2
+    dest: '{{ snmp_config_include_dir }}/smart.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when:
+    - snmp_application_discovery.smart
+    - not snmp_application_discovery.systemd
+  notify:
+    - restart snmp
+
+- name: 'linux apps smart : disable stale cache refresh timer'
+  become: true
+  systemd:
+    name: librenms-snmp-extension@smart.timer
+    enabled: false
+    state: stopped
+    daemon_reload: true
+  failed_when: false
+  when:
+    - not snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+
+- name: 'linux apps smart : remove stale systemd override'
+  become: true
+  file:
+    path: /etc/systemd/system/librenms-snmp-extension@smart.service.d
+    state: absent
+  when:
+    - not snmp_application_discovery.smart
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+
+- name: 'linux apps smart : remove stale cache file'
+  become: true
+  file:
+    path: '{{ snmp_application_smart_cache_file }}'
+    state: absent
+  when: not snmp_application_discovery.smart
 
 - name: 'linux apps smart : remove stale snmpd include snippet'
   become: true

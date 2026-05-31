@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+cache={{ snmp_application_smart_cache_file }}
+smartctl={{ snmp_application_smart_smartctl }}
+useSN={{ snmp_application_smart_use_sn }}
+{% if snmp_application_smart_devices | length > 0 %}
+{% for device in snmp_application_smart_devices %}
+{{ device.name }}{% if device.path is defined %} {{ device.path }}{% if device.type is defined %} -d {{ device.type }}{% endif %}{% endif %}
+
+{% endfor %}
+{% else %}
+{% for line in snmp_application_smart_scan.stdout_lines | default([]) %}
+{% set parts = (line.split('#')[0]).strip().split() %}
+{% if parts | length >= 1 and parts[0] | length > 0 %}
+{{ parts[0] | basename }} {{ parts | join(' ') }}
+
+{% endif %}
+{% endfor %}
+{% endif %}

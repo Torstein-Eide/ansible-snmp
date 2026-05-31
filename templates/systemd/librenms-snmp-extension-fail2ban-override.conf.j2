@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+[Service]
+ExecStart=
+ExecStart={{ snmp_application_extension_scripts }}/fail2ban -u -C {{ snmp_application_fail2ban_cache_file }}
+ReadWritePaths={{ snmp_application_fail2ban_cache_file | dirname }}

@@ -14,12 +14,118 @@
     setype: lib_t
     selevel: s0
   when: snmp_application_discovery.fail2ban
+  notify:
+    - refresh fail2ban cache
 
-- name: 'linux apps fail2ban : install snmpd include snippet'
+- name: 'linux apps fail2ban : create cache directory'
   become: true
-  copy:
-    content: |
-      extend fail2ban {{ snmp_application_extension_scripts }}/fail2ban
+  file:
+    path: '{{ snmp_application_cache_dir }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+  notify:
+    - refresh fail2ban cache
+
+- name: 'linux apps fail2ban : install common systemd service'
+  become: true
+  template:
+    src: systemd/librenms-snmp-extension@.service.j2
+    dest: /etc/systemd/system/librenms-snmp-extension@.service
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+
+- name: 'linux apps fail2ban : install common systemd timer'
+  become: true
+  template:
+    src: systemd/librenms-snmp-extension@.timer.j2
+    dest: /etc/systemd/system/librenms-snmp-extension@.timer
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+
+- name: 'linux apps fail2ban : create systemd override directory'
+  become: true
+  file:
+    path: /etc/systemd/system/librenms-snmp-extension@fail2ban.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+    - refresh fail2ban cache
+
+- name: 'linux apps fail2ban : install systemd override'
+  become: true
+  template:
+    src: systemd/librenms-snmp-extension-fail2ban-override.conf.j2
+    dest: /etc/systemd/system/librenms-snmp-extension@fail2ban.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+    - refresh fail2ban cache
+
+- name: 'linux apps fail2ban : enable cache refresh timer'
+  become: true
+  systemd:
+    name: librenms-snmp-extension@fail2ban.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+
+- name: 'linux apps fail2ban : check cache file'
+  become: true
+  stat:
+    path: '{{ snmp_application_fail2ban_cache_file }}'
+  register: snmp_application_fail2ban_cache_stat
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+
+- name: 'linux apps fail2ban : queue cache refresh'
+  become: true
+  command:
+    argv:
+      - /bin/true
+  changed_when: true
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+    - not snmp_application_fail2ban_cache_stat.stat.exists
+  notify:
+    - refresh fail2ban cache
+
+- name: 'linux apps fail2ban : install cached snmpd include snippet'
+  become: true
+  template:
+    src: snmp/fail2ban-cached.conf.j2
     dest: '{{ snmp_config_include_dir }}/fail2ban.conf'
     owner: root
     group: root
@@ -28,9 +134,60 @@
     serole: object_r
     setype: etc_t
     selevel: s0
-  when: snmp_application_discovery.fail2ban
+  when:
+    - snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
   notify:
     - restart snmp
+
+- name: 'linux apps fail2ban : install direct snmpd include snippet'
+  become: true
+  template:
+    src: snmp/fail2ban-direct.conf.j2
+    dest: '{{ snmp_config_include_dir }}/fail2ban.conf'
+    owner: root
+    group: root
+    mode: '0640'
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when:
+    - snmp_application_discovery.fail2ban
+    - not snmp_application_discovery.systemd
+  notify:
+    - restart snmp
+
+- name: 'linux apps fail2ban : disable stale cache refresh timer'
+  become: true
+  systemd:
+    name: librenms-snmp-extension@fail2ban.timer
+    enabled: false
+    state: stopped
+    daemon_reload: true
+  failed_when: false
+  when:
+    - not snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+
+- name: 'linux apps fail2ban : remove stale systemd override'
+  become: true
+  file:
+    path: /etc/systemd/system/librenms-snmp-extension@fail2ban.service.d
+    state: absent
+  register: snmp_application_fail2ban_systemd_override_remove
+  when:
+    - not snmp_application_discovery.fail2ban
+    - snmp_application_discovery.systemd
+  notify:
+    - reload systemd
+
+- name: 'linux apps fail2ban : remove stale cache file'
+  become: true
+  file:
+    path: '{{ snmp_application_fail2ban_cache_file }}'
+    state: absent
+  when: not snmp_application_discovery.fail2ban
 
 - name: 'linux apps fail2ban : remove stale snmpd include snippet'
   become: true

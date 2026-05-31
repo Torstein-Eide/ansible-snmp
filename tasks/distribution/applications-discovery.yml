@@ -131,6 +131,14 @@
   failed_when: false
   register: snmp_application_proxmox_detect
 
+- name: 'linux apps discovery : detect nvidia_gpu'
+  shell: command -v nvidia-smi >/dev/null 2>&1
+  args:
+    executable: /bin/sh
+  changed_when: false
+  failed_when: false
+  register: snmp_application_nvidia_gpu_detect
+
 - name: 'linux apps discovery : detect smart'
   shell: command -v smartctl >/dev/null 2>&1
   args:
@@ -165,5 +173,6 @@
       osupdate: '{{ snmp_application_osupdate_detect.rc == 0 }}'
       pihole: '{{ snmp_application_pihole_detect.rc == 0 }}'
       proxmox: '{{ snmp_application_proxmox_detect.rc == 0 }}'
+      nvidia_gpu: '{{ snmp_application_nvidia_gpu_detect.rc == 0 }}'
       smart: '{{ snmp_application_smart_detect.rc == 0 }}'
       ups_nut: '{{ snmp_application_ups_nut_detect.rc == 0 }}'

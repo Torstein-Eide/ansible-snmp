@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+[Service]
+ExecStart=
+ExecStart={{ snmp_application_extension_scripts }}/smart -u -Z -c {{ snmp_application_smart_config_file }}
+ReadWritePaths={{ snmp_application_smart_cache_file | dirname }}

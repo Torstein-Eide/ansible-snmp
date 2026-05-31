@@ -23,3 +23,31 @@
   win_service:
     name: SNMP
     state: restarted
+
+- name: apply tmpfiles
+  become: true
+  command: systemd-tmpfiles --create
+  changed_when: false
+
+- name: reload systemd
+  become: true
+  systemd:
+    daemon_reload: true
+
+- name: refresh smart cache
+  become: true
+  systemd:
+    name: librenms-snmp-extension@smart.service
+    state: restarted
+  when:
+    - snmp_application_discovery.smart | default(false)
+    - snmp_application_discovery.systemd | default(false)
+
+- name: refresh fail2ban cache
+  become: true
+  systemd:
+    name: librenms-snmp-extension@fail2ban.service
+    state: restarted
+  when:
+    - snmp_application_discovery.fail2ban | default(false)
+    - snmp_application_discovery.systemd | default(false)
