@@ -51,3 +51,12 @@
   when:
     - snmp_application_discovery.fail2ban | default(false)
     - snmp_application_discovery.systemd | default(false)
+
+- name: refresh proxmox cache
+  become: true
+  systemd:
+    name: librenms-snmp-extension@proxmox.service
+    state: restarted
+  when:
+    - snmp_application_discovery.proxmox | default(false)
+    - snmp_application_discovery.systemd | default(false)

@@ -86,6 +86,7 @@ snmp_application_nfs_enabled: true
 snmp_application_osupdate_enabled: true
 snmp_application_pihole_enabled: true
 snmp_application_proxmox_enabled: true
+snmp_application_proxmox_cache_file: '{{ snmp_application_cache_dir }}/proxmox'
 snmp_application_smart_enabled: true
 snmp_application_nvidia_gpu_enabled: true
 snmp_application_ups_nut_enabled: true

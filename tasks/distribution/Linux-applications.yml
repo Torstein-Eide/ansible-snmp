@@ -38,74 +38,115 @@
     group: root
     mode: '0755'
 
+# Each extension runs only when the application is discovered (to install or
+# update it) or when a managed snmpd snippet is still present (to clean it up
+# after the application was removed). When neither is true there is nothing to
+# do, so the whole include is skipped to keep the run short.
+
 - name: 'linux apps : configure apache extension'
   include_tasks: applications/apache.yml
-  when: snmp_application_apache_enabled
+  when:
+    - snmp_application_apache_enabled
+    - snmp_application_discovery.apache or 'apache.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure nginx extension'
   include_tasks: applications/nginx.yml
-  when: snmp_application_nginx_enabled
+  when:
+    - snmp_application_nginx_enabled
+    - snmp_application_discovery.nginx or 'nginx.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure mysql extension'
   include_tasks: applications/mysql.yml
-  when: snmp_application_mysql_enabled
+  when:
+    - snmp_application_mysql_enabled
+    - snmp_application_discovery.mysql or 'mysql.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure redis extension'
   include_tasks: applications/redis.yml
-  when: snmp_application_redis_enabled
+  when:
+    - snmp_application_redis_enabled
+    - snmp_application_discovery.redis or 'redis.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure memcached extension'
   include_tasks: applications/memcached.yml
-  when: snmp_application_memcached_enabled
+  when:
+    - snmp_application_memcached_enabled
+    - snmp_application_discovery.memcached or 'memcached.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure fail2ban extension'
   include_tasks: applications/fail2ban.yml
-  when: snmp_application_fail2ban_enabled
+  when:
+    - snmp_application_fail2ban_enabled
+    - snmp_application_discovery.fail2ban or 'fail2ban.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure chronyd extension'
   include_tasks: applications/chronyd.yml
-  when: snmp_application_chronyd_enabled
+  when:
+    - snmp_application_chronyd_enabled
+    - snmp_application_discovery.chronyd or 'chronyd.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure docker extension'
   include_tasks: applications/docker.yml
-  when: snmp_application_docker_enabled
+  when:
+    - snmp_application_docker_enabled
+    - snmp_application_discovery.docker or 'docker.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure systemd extension'
   include_tasks: applications/systemd.yml
-  when: snmp_application_systemd_enabled
+  when:
+    - snmp_application_systemd_enabled
+    - snmp_application_discovery.systemd or 'systemd.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure borgbackup extension'
   include_tasks: applications/borgbackup.yml
-  when: snmp_application_borgbackup_enabled
+  when:
+    - snmp_application_borgbackup_enabled
+    - snmp_application_discovery.borgbackup or 'borgbackup.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure mdadm extension'
   include_tasks: applications/mdadm.yml
-  when: snmp_application_mdadm_enabled
+  when:
+    - snmp_application_mdadm_enabled
+    - snmp_application_discovery.mdadm or 'mdadm.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure nfs extension'
   include_tasks: applications/nfs.yml
-  when: snmp_application_nfs_enabled
+  when:
+    - snmp_application_nfs_enabled
+    - snmp_application_discovery.nfs or 'nfs.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure osupdate extension'
   include_tasks: applications/osupdate.yml
-  when: snmp_application_osupdate_enabled
+  when:
+    - snmp_application_osupdate_enabled
+    - snmp_application_discovery.osupdate or 'osupdate.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure pihole extension'
   include_tasks: applications/pihole.yml
-  when: snmp_application_pihole_enabled
+  when:
+    - snmp_application_pihole_enabled
+    - snmp_application_discovery.pihole or 'pi-hole.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure proxmox extension'
   include_tasks: applications/proxmox.yml
-  when: snmp_application_proxmox_enabled
+  when:
+    - snmp_application_proxmox_enabled
+    - snmp_application_discovery.proxmox or 'proxmox.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure nvidia_gpu extension'
   include_tasks: applications/nvidia_gpu.yml
-  when: snmp_application_nvidia_gpu_enabled
+  when:
+    - snmp_application_nvidia_gpu_enabled
+    - snmp_application_discovery.nvidia_gpu or 'nvidia_gpu.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure smart extension'
   include_tasks: applications/smart.yml
-  when: snmp_application_smart_enabled
+  when:
+    - snmp_application_smart_enabled
+    - snmp_application_discovery.smart or 'smart.conf' in snmp_application_snippets_present
 
 - name: 'linux apps : configure ups-nut extension'
   include_tasks: applications/ups-nut.yml
-  when: snmp_application_ups_nut_enabled
+  when:
+    - snmp_application_ups_nut_enabled
+    - snmp_application_discovery.ups_nut or 'ups-nut.conf' in snmp_application_snippets_present

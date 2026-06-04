@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+[Service]
+ExecStart=
+ExecStart=/bin/sh -c '{{ snmp_application_extension_scripts }}/proxmox > {{ snmp_application_proxmox_cache_file }}.tmp && mv {{ snmp_application_proxmox_cache_file }}.tmp {{ snmp_application_proxmox_cache_file }}'
+ReadWritePaths={{ snmp_application_proxmox_cache_file | dirname }}

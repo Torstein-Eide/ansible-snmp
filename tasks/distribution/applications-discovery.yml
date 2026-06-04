@@ -155,6 +155,22 @@
   failed_when: false
   register: snmp_application_ups_nut_detect
 
+- name: 'linux apps discovery : list managed snmpd include snippets'
+  become: true
+  find:
+    paths: '{{ snmp_config_include_dir }}'
+    patterns: '*.conf'
+    file_type: file
+  register: snmp_application_snippet_find
+  changed_when: false
+  failed_when: false
+
+- name: 'linux apps discovery : record present snmpd include snippets'
+  set_fact:
+    snmp_application_snippets_present: >-
+      {{ snmp_application_snippet_find.files | default([])
+         | map(attribute='path') | map('basename') | list }}
+
 - name: 'linux apps discovery : record discovered applications'
   set_fact:
     snmp_application_discovery:
