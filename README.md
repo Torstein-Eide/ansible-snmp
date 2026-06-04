@@ -99,6 +99,10 @@ Extensions marked *cached via systemd timer* run on a 5-minute systemd timer and
 
 None.
 
+## Author
+
+Originally by [Simon Bärlocher](https://sbaerlocher.ch).
+
 ## License
 
 MIT
