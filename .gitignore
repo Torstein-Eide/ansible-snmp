@@ -1,2 +1,6 @@
-.ansible/
+# Hidden files and directories
+.*
+!.gitignore
+
+# Ansible runtime
 *.retry
