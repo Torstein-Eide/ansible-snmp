@@ -29,6 +29,19 @@
     - configuration
     - packages
 
+- name: detect Raspberry Pi hardware
+  stat:
+    path: /sys/firmware/devicetree/base/model
+  register: snmp_rpi_devicetree
+  when: ansible_facts['system'] == 'Linux'
+
+- name: load Raspberry Pi variable overrides
+  include_vars: "vars/Raspbian.yml"
+  when:
+    - ansible_facts['system'] == 'Linux'
+    - snmp_rpi_devicetree.stat is defined
+    - snmp_rpi_devicetree.stat.exists
+
 - name: include distribution tasks
   include_tasks: "{{ loop_distribution }}"
   with_first_found:
