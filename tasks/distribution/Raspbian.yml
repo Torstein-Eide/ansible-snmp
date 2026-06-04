@@ -1,0 +1,34 @@
+---
+
+- name: 'raspbian : include standard Linux tasks'
+  include_tasks: distribution/Linux.yml
+
+- name: 'raspbian : install rpi-model helper'
+  become: true
+  template:
+    src: snmp/rpi-model.sh.j2
+    dest: '{{ snmp_extension_scripts }}/rpi-model'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  notify:
+    - restart snmp
+
+- name: 'raspbian : install rpi-serial helper'
+  become: true
+  template:
+    src: snmp/rpi-serial.sh.j2
+    dest: '{{ snmp_extension_scripts }}/rpi-serial'
+    owner: root
+    group: "{{ snmp_deamon_group | default('root') }}"
+    mode: '0755'
+    seuser: system_u
+    serole: object_r
+    setype: lib_t
+    selevel: s0
+  notify:
+    - restart snmp

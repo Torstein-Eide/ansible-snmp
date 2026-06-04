@@ -1,5 +1,5 @@
 ---
-# vars file for
+# vars file for Raspberry Pi (Raspbian / Raspberry Pi OS)
 
 snmp_packages:
   - snmp
@@ -13,17 +13,17 @@ snmp_deamon_user: 'Debian-snmp'
 snmp_logging_options: '-Lsw'
 snmp_service_name: 'snmpd'
 
+# Device-tree files are world-readable; wrapper scripts strip the trailing
+# null byte that the kernel includes in device-tree string properties.
 snmp_extension_os_hw_serie:
   - >-
     .1.3.6.1.4.1.2021.7890.2 hardware
-    /usr/bin/sudo -n /bin/cat /sys/firmware/devicetree/base/model
+    {{ snmp_extension_scripts }}/rpi-model
   - >-
     .1.3.6.1.4.1.2021.7890.3 vendor
     /bin/echo "Raspberry Pi Foundation"
   - >-
     .1.3.6.1.4.1.2021.7890.4 serial
-    /usr/bin/sudo -n /bin/cat /sys/firmware/devicetree/base/serial-number
+    {{ snmp_extension_scripts }}/rpi-serial
 
-snmp_extension_hw_sudo_commands:
-  - /bin/cat /sys/firmware/devicetree/base/model
-  - /bin/cat /sys/firmware/devicetree/base/serial-number
+snmp_extension_hw_sudo_commands: []
