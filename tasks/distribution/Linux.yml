@@ -143,6 +143,12 @@
   tags:
     - configuration
 
+- name: 'linux : install and configure lldpd'
+  include_tasks: lldpd.yml
+  when: snmp_lldpd_enabled
+  tags:
+    - configuration
+
 - name: 'linux : configure detected application extensions'
   include_tasks: Linux-applications.yml
   when:

@@ -46,6 +46,14 @@ Forked from [sbaerlocher/ansible.snmp](https://galaxy.ansible.com/sbaerlocher/sn
 | `snmp_additional_packages` | `[]` | Extra packages to install alongside snmpd |
 | `snmp_custom_line` | — | List of raw lines appended to `snmpd.conf` |
 
+### lldpd
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `snmp_lldpd_enabled` | `true` | Install lldpd and register it as an AgentX subagent |
+
+When enabled, the role installs lldpd, adds its daemon user to the snmpd group so it can connect to the AgentX socket, and deploys `/etc/lldpd.conf`. lldpd then exposes LLDP-MIB data through snmpd automatically. Requires `snmp_agentx_enabled: true` (the default).
+
 ### Application extensions
 
 All application extensions are auto-detected by probing for the relevant binary (or process). Each can be individually disabled.

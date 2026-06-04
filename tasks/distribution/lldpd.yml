@@ -1,0 +1,37 @@
+---
+
+- name: 'linux lldpd : install package'
+  become: true
+  package:
+    name: lldpd
+    state: present
+
+- name: 'linux lldpd : add lldpd user to snmp daemon group'
+  become: true
+  user:
+    name: '{{ snmp_lldpd_user }}'
+    groups: '{{ snmp_deamon_group }}'
+    append: true
+  when:
+    - snmp_lldpd_user is defined
+    - snmp_deamon_group is defined
+  notify:
+    - restart lldpd
+
+- name: 'linux lldpd : deploy configuration'
+  become: true
+  template:
+    src: lldpd/lldpd.conf.j2
+    dest: /etc/lldpd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart lldpd
+
+- name: 'linux lldpd : enable and start service'
+  become: true
+  service:
+    name: lldpd
+    enabled: true
+    state: started

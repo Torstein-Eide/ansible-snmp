@@ -91,6 +91,8 @@ snmp_application_smart_enabled: true
 snmp_application_nvidia_gpu_enabled: true
 snmp_application_ups_nut_enabled: true
 
+snmp_lldpd_enabled: true
+
 snmp_extension_os_hw_serie:
   - >-
     .1.3.6.1.4.1.2021.7890.2 hardware

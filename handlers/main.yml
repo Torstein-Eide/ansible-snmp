@@ -24,6 +24,12 @@
     name: SNMP
     state: restarted
 
+- name: restart lldpd
+  become: true
+  service:
+    name: lldpd
+    state: restarted
+
 - name: apply tmpfiles
   become: true
   command: systemd-tmpfiles --create
