@@ -91,6 +91,15 @@ snmp_application_smart_enabled: true
 snmp_application_nvidia_gpu_enabled: true
 snmp_application_ups_nut_enabled: true
 
+# Map subnets to SNMP sysLocation strings. First match wins.
+# Example:
+#   snmp_location_subnet_map:
+#     - subnet: "10.0.1.0/24"
+#       location: "Server Room A"
+#     - subnet: "10.0.2.0/24"
+#       location: "Office Floor 2"
+snmp_location_subnet_map: []
+
 snmp_lldpd_enabled: true
 
 snmp_extension_os_hw_serie:

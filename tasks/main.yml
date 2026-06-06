@@ -42,6 +42,18 @@
     - snmp_rpi_devicetree.stat is defined
     - snmp_rpi_devicetree.stat.exists
 
+- name: resolve snmp_location from subnet map
+  set_fact:
+    snmp_location: "{{ item.location }}"
+  # Iterate in reverse so the first matching entry in the list wins.
+  loop: "{{ snmp_location_subnet_map | reverse | list }}"
+  when:
+    - snmp_location_subnet_map | length > 0
+    - ansible_facts['default_ipv4']['address'] is defined
+    - (ansible_facts['default_ipv4']['address'] | ansible.utils.ipaddr(item.subnet) | default(false)) is truthy
+  tags:
+    - configuration
+
 - name: include distribution tasks
   include_tasks: "{{ loop_distribution }}"
   with_first_found:

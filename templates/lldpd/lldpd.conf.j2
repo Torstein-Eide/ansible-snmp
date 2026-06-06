@@ -1,8 +1,9 @@
 # {{ ansible_managed }}
 
 configure lldp portidsubtype ifname
-{% if snmp_location is defined %}
-configure system location "{{ snmp_location }}"
+{% set _location = snmp_location | default('') %}
+{% if _location %}
+configure system location "{{ _location }}"
 {% endif %}
 {% if snmp_contact is defined %}
 configure system description "{{ snmp_contact }}"
